@@ -21,3 +21,5 @@
                  java -jar build/libs/eml-reader-1.0.jar archive.zip 
       -  gradlew bootRun
 
+  The .eml files can be found in the `output` directory. 
+
