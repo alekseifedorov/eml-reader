@@ -13,6 +13,11 @@
 3. How to run
 
     Type either of the following commands:
-      -  gradlew clean build && java -jar build/libs/eml-reader-1.0.jar
+      -  gradlew clean build && java -jar build/libs/eml-reader-1.0.jar filename [-t zip|eml],
+            e.g. java -jar build/libs/eml-reader-1.0.jar archive.zip -t zip 
+                  or
+                 java -jar build/libs/eml-reader-1.0.jar "Email 2.eml" -t eml 
+                  or
+                 java -jar build/libs/eml-reader-1.0.jar archive.zip 
       -  gradlew bootRun
 
