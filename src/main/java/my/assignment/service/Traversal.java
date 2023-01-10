@@ -77,17 +77,16 @@ public class Traversal {
     }
 
     private void processZipFile(String filepath, List<Node> nodes) throws IOException {
-        try (var file = new ZipFile(filepath)) {
-            for (var e = file.entries(); e.hasMoreElements(); ) {
-                ZipEntry entryZip = e.nextElement();
-                var is = file.getInputStream(entryZip);
-                var node = EmlNode.builder()
-                    .inputStream(is)
-                    .processor(processor)
-                    .fileName(entryZip.getName())
-                    .build();
-                nodes.add(node);
-            }
+        var file = new ZipFile(filepath);
+        for (var e = file.entries(); e.hasMoreElements(); ) {
+            ZipEntry entryZip = e.nextElement();
+            var is = file.getInputStream(entryZip);
+            var node = EmlNode.builder()
+                .inputStream(is)
+                .processor(processor)
+                .fileName(entryZip.getName())
+                .build();
+            nodes.add(node);
         }
     }
 }
