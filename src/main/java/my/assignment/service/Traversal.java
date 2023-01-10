@@ -5,11 +5,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import my.assignment.model.PlainTextNode;
+import my.assignment.model.EmlNode;
 import my.assignment.model.Format;
 import my.assignment.model.Node;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,9 @@ public class Traversal {
     private final Processor processor;
 
     @SneakyThrows
-    public void process(String filepath, Format format) {
+    public void process(String filepath, List<Format> formats) {
         var nodes = new ArrayList<Node>();
-        switch (format) {
+        switch (formats.remove(0)) {
             case ZIP:
                 processZipFile(filepath, nodes);
                 break;
@@ -35,18 +36,27 @@ public class Traversal {
             default:
                 throw new IllegalArgumentException("Unexpected file format");
         }
-        traverse(nodes);
+        traverse(nodes, formats);
     }
 
-    void traverse(List<Node> nodes) {
+    void traverse(List<Node> nodes, List<Format> formats) {
+        var curFormat = 0;
         createOutputDirectory(nodes);
+        int nodesOnLevel = nodes.size();
+        int curNode = 0;
         while (!nodes.isEmpty()) {
             var next = nodes.remove(0);
-            nodes.addAll(next.process());
+            nodes.addAll(next.process(formats.get(curFormat)));
+            curNode++;
+            if (curNode == nodesOnLevel) {
+                curNode = 0;
+                nodesOnLevel = nodes.size();
+                curFormat++;
+            }
         }
     }
 
-    private static void createOutputDirectory(List<Node> nodes) {
+    private void createOutputDirectory(List<Node> nodes) {
         if (!nodes.isEmpty()) {
             var dir = new File(OUTPUT_DIR);
             if (!dir.exists()) {
@@ -57,23 +67,27 @@ public class Traversal {
 
     private void processEmlFile(String filepath, List<Node> nodes) throws IOException {
         var file = new File(filepath);
-        var node = PlainTextNode.builder()
+        var node = EmlNode.builder()
             .processor(processor)
             .inputStream(new FileInputStream(file))
+            .fileName(file.getName())
             .build();
 
         nodes.add(node);
     }
 
     private void processZipFile(String filepath, List<Node> nodes) throws IOException {
-        var file = new ZipFile(filepath);
-        for (var e = file.entries(); e.hasMoreElements(); ) {
-            var is = file.getInputStream(e.nextElement());
-            var node = PlainTextNode.builder()
-                .inputStream(is)
-                .processor(processor)
-                .build();
-            nodes.add(node);
+        try (var file = new ZipFile(filepath)) {
+            for (var e = file.entries(); e.hasMoreElements(); ) {
+                ZipEntry entryZip = e.nextElement();
+                var is = file.getInputStream(entryZip);
+                var node = EmlNode.builder()
+                    .inputStream(is)
+                    .processor(processor)
+                    .fileName(entryZip.getName())
+                    .build();
+                nodes.add(node);
+            }
         }
     }
 }

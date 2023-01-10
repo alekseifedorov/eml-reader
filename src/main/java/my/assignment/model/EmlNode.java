@@ -7,13 +7,16 @@ import my.assignment.service.Processor;
 
 @Builder
 public class EmlNode implements Node {
+
+    private Processor processor;
     private InputStream inputStream;
     private String fileName;
-    private Processor processor;
 
     @Override
-    public List<Node> process() {
-        processor.saveEml(fileName, inputStream);
-        return List.of();
+    public List<Node> process(Format format) {
+        if (format != Format.EML) {
+            throw new IllegalArgumentException(String.format("Wrong format [%s] for eml file [%s]", format, fileName));
+        }
+        return processor.processEml(inputStream, fileName);
     }
 }

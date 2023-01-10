@@ -11,7 +11,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
-import my.assignment.model.PlainTextNode;
+import my.assignment.model.EmlNode;
+import my.assignment.model.Format;
 import my.assignment.model.ZipNode;
 import my.assignment.service.impl.ProcessorImpl;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,10 @@ class TraversalTest {
         ProcessorImpl processor = new ProcessorImpl();
         Traversal traversal = new Traversal(processor);
         InputStream is = this.getClass().getResourceAsStream("/Email 2.eml");
-        traversal.traverse(new ArrayList<>(List.of(PlainTextNode.builder()
+        traversal.traverse(new ArrayList<>(List.of(EmlNode.builder()
             .inputStream(is)
             .processor(processor)
-            .build())));
+            .build())), List.of(Format.EML, Format.ZIP, Format.EML, Format.EML));
 
         assertThat(Files.list(Path.of(Traversal.OUTPUT_DIR))).extracting(Path::getFileName)
             .contains(Path.of("Test 1.eml"), Path.of("Test 3.eml"));
@@ -38,11 +39,11 @@ class TraversalTest {
         deleteDir(new File(Traversal.OUTPUT_DIR));
         ProcessorImpl processor = new ProcessorImpl();
         Traversal traversal = new Traversal(processor);
-        InputStream is = this.getClass().getResourceAsStream("/input.zip");
+        InputStream is = this.getClass().getResourceAsStream("/archive.zip");
         traversal.traverse(new ArrayList<>(List.of(ZipNode.builder()
             .zipInputStream(new ZipInputStream(is))
             .processor(processor)
-            .build())));
+            .build())), List.of(Format.ZIP, Format.EML, Format.ZIP, Format.EML, Format.EML));
 
         assertThat(Files.list(Path.of(Traversal.OUTPUT_DIR))).extracting(Path::getFileName)
             .contains(Path.of("Test 1.eml"), Path.of("Test 2.eml"), Path.of("Test 3.eml"));

@@ -9,9 +9,13 @@ import my.assignment.service.Processor;
 public class ZipNode implements Node {
     private Processor processor;
     private ZipInputStream zipInputStream;
+    private String fileName;
 
     @Override
-    public List<Node> process() {
+    public List<Node> process(Format format) {
+        if (format != Format.ZIP) {
+            throw new IllegalArgumentException(String.format("Wrong format [%s] for zip file [%s]", format, fileName));
+        }
         return processor.processZip(zipInputStream);
     }
 }

@@ -3,6 +3,7 @@ package my.assignment.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import my.assignment.model.PlainTextNode;
-import my.assignment.model.Node;
 import my.assignment.model.EmlNode;
+import my.assignment.model.Node;
 import my.assignment.model.ZipNode;
 import my.assignment.service.Processor;
 import my.assignment.service.Traversal;
@@ -29,36 +29,43 @@ public class ProcessorImpl implements Processor {
 
     @SneakyThrows
     @Override
-    public List<Node> processPlainText(InputStream inputStream) {
-        var result = new ArrayList<Node>();
+    public List<Node> processEml(InputStream inputStream, String filename) {
         MimeMessage message = new MimeMessage(null, inputStream);
         var type = message.getContentType();
         if (type.contains("multipart")) {
-            Multipart multiPart = (Multipart) message.getContent();
-            for (int partCount = 0; partCount < multiPart.getCount(); partCount++) {
-                MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
-                if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-                    if (part.getContentType().contains("zip")) {
-                        var node = ZipNode.builder()
-                            .zipInputStream(new ZipInputStream(part.getInputStream()))
-                            .processor(this)
-                            .build();
+            return processMultipart(message);
+        } else {
+            saveEml(filename, message.getInputStream());
+            return List.of();
+        }
+    }
 
-                        result.add(node);
-                    }
+    private List<Node> processMultipart(MimeMessage message) throws IOException, MessagingException {
+        ArrayList<Node> result = new ArrayList<>();
+        Multipart multiPart = (Multipart) message.getContent();
+        for (int partCount = 0; partCount < multiPart.getCount(); partCount++) {
+            MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
+            if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+                if (part.getContentType().contains("zip")) {
+                    var node = ZipNode.builder()
+                        .zipInputStream(new ZipInputStream(part.getInputStream()))
+                        .processor(this)
+                        .fileName(part.getFileName())
+                        .build();
 
-                    if (isEml(part)) {
-                        var node = EmlNode.builder()
-                            .fileName(part.getFileName())
-                            .inputStream(part.getInputStream())
-                            .processor(this)
-                            .build();
-                        result.add(node);
-                    }
+                    result.add(node);
+                }
+
+                if (isEml(part)) {
+                    var node = EmlNode.builder()
+                        .fileName(part.getFileName())
+                        .inputStream(part.getInputStream())
+                        .processor(this)
+                        .build();
+                    result.add(node);
                 }
             }
         }
-
         return result;
     }
 
@@ -78,11 +85,12 @@ public class ProcessorImpl implements Processor {
                     }
                 }
 
-                var plainTextNode = PlainTextNode.builder()
+                var emlNode = EmlNode.builder()
                     .processor(this)
                     .inputStream(new FileInputStream(newFile))
+                    .fileName(zipEntry.getName())
                     .build();
-                result.add(plainTextNode);
+                result.add(emlNode);
             }
             zis.closeEntry();
             zipEntry = zis.getNextEntry();

@@ -1,5 +1,8 @@
 package my.assignment;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import my.assignment.model.Format;
@@ -15,11 +18,13 @@ public class MainCommandLineRunner implements CommandLineRunner {
     private final Traversal traversal;
 
     @Override
-    public void run(String... args) throws Exception {
-        var format = Format.ZIP;
+    public void run(String... args) {
+        var format = List.of(Format.ZIP, Format.EML, Format.EML);
         if (args.length > 1) {
             if ("-t".equalsIgnoreCase(args[1].strip())) {
-                format = Format.fromString(args[2].toLowerCase().strip());
+                String formatStr = args[2].toLowerCase().strip();
+                format = Arrays.stream(formatStr.split("-"))
+                    .map(Format::fromString).collect(Collectors.toList());
             }
         }
         try {
