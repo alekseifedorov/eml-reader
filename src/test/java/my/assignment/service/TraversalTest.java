@@ -43,10 +43,10 @@ class TraversalTest {
         traversal.traverse(new ArrayList<>(List.of(ZipNode.builder()
             .zipInputStream(new ZipInputStream(is))
             .processor(processor)
-            .build())), List.of(Format.ZIP, Format.EML, Format.ZIP, Format.EML, Format.EML));
+            .build())), List.of(Format.ZIP, Format.EML));
 
         assertThat(Files.list(Path.of(Traversal.OUTPUT_DIR))).extracting(Path::getFileName)
-            .contains(Path.of("Test 1.eml"), Path.of("Test 2.eml"), Path.of("Test 3.eml"));
+            .contains(Path.of("Email 1.eml"), Path.of("Email 2.eml"));
     }
 
     void deleteDir(File file) {
