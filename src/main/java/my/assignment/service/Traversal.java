@@ -25,6 +25,9 @@ public class Traversal {
 
     @SneakyThrows
     public void process(String filepath, List<Format> formats) {
+        if (formats.size() == 1) {
+            throw new IllegalArgumentException("The format list size must be greater than 1");
+        }
         var nodes = new ArrayList<Node>();
         switch (formats.remove(0)) {
             case ZIP:
