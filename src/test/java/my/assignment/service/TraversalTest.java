@@ -15,13 +15,20 @@ import my.assignment.model.EmlNode;
 import my.assignment.model.Format;
 import my.assignment.model.ZipNode;
 import my.assignment.service.impl.ProcessorImpl;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TraversalTest {
 
+    @BeforeEach
+    @AfterEach
+    void deleteDir() {
+        deleteDir(new File(Traversal.OUTPUT_DIR));
+    }
+
     @Test
     void shouldProcessEmlFile() throws IOException {
-        deleteDir(new File(Traversal.OUTPUT_DIR));
         ProcessorImpl processor = new ProcessorImpl();
         Traversal traversal = new Traversal(processor);
         InputStream is = this.getClass().getResourceAsStream("/Email 2.eml");
@@ -36,7 +43,6 @@ class TraversalTest {
 
     @Test
     void shouldProcessZipFile() throws IOException {
-        deleteDir(new File(Traversal.OUTPUT_DIR));
         ProcessorImpl processor = new ProcessorImpl();
         Traversal traversal = new Traversal(processor);
         InputStream is = this.getClass().getResourceAsStream("/archive.zip");
