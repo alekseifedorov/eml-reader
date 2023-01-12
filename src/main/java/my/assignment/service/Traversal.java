@@ -46,7 +46,7 @@ public class Traversal {
         int curNode = 0;
         while (!nodes.isEmpty()) {
             var next = nodes.remove(0);
-            nodes.addAll(next.process(formats.get(curFormat)));
+            nodes.addAll(next.process(formats.get(curFormat), curFormat == formats.size() - 1));
             curNode++;
             if (curNode == nodesOnLevel) {
                 curNode = 0;

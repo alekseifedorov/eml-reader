@@ -10,5 +10,5 @@ public interface Processor {
 
     List<Node> processZip(ZipInputStream zis);
 
-    void saveEml(String fileName, InputStream inputStream);
+    void save(String fileName, InputStream inputStream);
 }

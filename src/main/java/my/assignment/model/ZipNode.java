@@ -12,10 +12,15 @@ public class ZipNode implements Node {
     private String fileName;
 
     @Override
-    public List<Node> process(Format format) {
+    public List<Node> process(Format format, boolean isEndNode) {
         if (format != Format.ZIP) {
             throw new IllegalArgumentException(String.format("Wrong format [%s] for zip file [%s]", format, fileName));
         }
-        return processor.processZip(zipInputStream);
+        if (isEndNode) {
+            processor.save(fileName, zipInputStream);
+            return List.of();
+        } else {
+            return processor.processZip(zipInputStream);
+        }
     }
 }

@@ -35,7 +35,7 @@ public class ProcessorImpl implements Processor {
         if (type.contains("multipart")) {
             return processMultipart(message);
         } else {
-            saveEml(filename, message.getInputStream());
+            save(filename, message.getInputStream());
             return List.of();
         }
     }
@@ -102,7 +102,7 @@ public class ProcessorImpl implements Processor {
 
     @Override
     @SneakyThrows
-    public void saveEml(String fileName, InputStream inputStream) {
+    public void save(String fileName, InputStream inputStream) {
         var buffer = new byte[1024];
         var newFile = new File(Traversal.OUTPUT_DIR, fileName);
         try (FileOutputStream fos = new FileOutputStream(newFile)) {
